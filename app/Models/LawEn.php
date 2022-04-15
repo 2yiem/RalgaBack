@@ -4,9 +4,10 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class Law extends Model
+
+class LawEn extends Model
 {
-    protected $table = "laws_rw";
+    protected $table = "laws_en";
     protected $primaryKey = "id";
     protected $allowedFields = ["articleId", "title"];
 }
