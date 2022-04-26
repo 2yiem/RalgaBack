@@ -97,13 +97,49 @@ class Home extends BaseController
         }
     }
 
+    public function retrievesChaptersRW() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ChapterRwModel();
+        $result = $model->select("chapters_rw.id as value, chapters_rw.title as text, c.title as category")
+            ->join('category_rw c', 'c.id = chapters_rw.category_id')
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrievesChaptersRWD() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ChapterRwModel();
+        $result = $model->select('chapters_rw.id as value, chapters_rw.title as text, c.title as category')
+            ->join('category_rw c', 'c.id = chapters_rw.category_id')
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrievesChaptersFR() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ChapterFrModel();
+        $result = $model->select("chapters_fr.id as value, chapters_fr.title as text, c.title as category")
+            ->join('category_fr c', 'c.id = chapters_fr.category_id')
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrievesChaptersEN() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ChapterEnModel();
+        $result = $model->select("chapters_en.id as value, chapters_en.title as text, c.title as category")
+            ->join('category_en c', 'c.id = chapters_en.category_id')
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
     public function retrieveChaptersRW(int $id= null) : ResponseInterface
     {
         $this->appendHeader();
         $model = new ChapterRwModel();
-        $result = $model->select("chapters_rw.id, chapters_rw.title as text, c.id as category, if(isnull(articles_rw.num),0,articles_rw.num) as articles_count")
+        $result = $model->select("chapters_rw.id, chapters_rw.title as text,chapters_rw.description, c.id as category, if(isnull(articles_rw.num),0,articles_rw.num) as articles_count")
             ->join('category_rw c', 'c.id = chapters_rw.category_id')
-            ->join("(select count(ar.id) as num,chapter_id from article_rw ar left join chapters_rw ccr on ccr.id = ar.chapter_id GROUP by chapter_id) articles_rw","articles_rw.chapter_id = chapters_rw.id","left")
+            ->join("(select count(ar.id) as num, chapter_id from article_rw ar left join chapters_rw ccr on ccr.id = ar.chapter_id GROUP by chapter_id) articles_rw","articles_rw.chapter_id = chapters_rw.id","left")
             ->where('chapters_rw.category_id', $id)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
@@ -112,7 +148,7 @@ class Home extends BaseController
     {
         $this->appendHeader();
         $model = new ChapterEnModel();
-        $result = $model->select("chapters_en.id, chapters_en.title as text, c.id as category, if(isnull(articles_en.num),0,articles_en.num) as articles_count")
+        $result = $model->select("chapters_en.id, chapters_en.title as text, chapters_en.description,  c.id as category, if(isnull(articles_en.num),0,articles_en.num) as articles_count")
             ->join('category_en c', 'c.id = chapters_en.category_id')
             ->join("(select count(ar.id) as num,chapter_id from article_en ar left join chapters_en ccr on ccr.id = ar.chapter_id GROUP by chapter_id) articles_en","articles_en.chapter_id = chapters_en.id","left")
             ->where('chapters_en.category_id', $id)
@@ -123,7 +159,7 @@ class Home extends BaseController
     {
         $this->appendHeader();
         $model = new ChapterFrModel();
-        $result = $model->select("chapters_fr.id, chapters_fr.title as text, c.title as category, if(isnull(articles_fr.num),0,articles_fr.num) as articles_count")
+        $result = $model->select("chapters_fr.id, chapters_fr.title as text, chapters_fr.description,  c.title as category, if(isnull(articles_fr.num),0,articles_fr.num) as articles_count")
             ->join('category_fr c', 'c.id = chapters_fr.category_id')
             ->join("(select count(ar.id) as num,chapter_id from article_fr ar left join chapters_fr ccr on ccr.id = ar.chapter_id GROUP by chapter_id) articles_fr","articles_fr.chapter_id = chapters_fr.id","left")
             ->where('chapters_fr.category_id', $id)
@@ -143,6 +179,7 @@ class Home extends BaseController
             'title' => $input->title,
             'chapter_id' => $input->chapterId
         ];
+
         try {
             $model->insert($data);
             return $this->response->setJSON(["status" => 200, "msg" => "ArticleRw saved successfully"]);
@@ -181,6 +218,36 @@ class Home extends BaseController
         }catch (Exception $exception){
             return $this->response->setStatusCode(400)->setJSon($exception->getMessage());
         }
+    }
+    public function articlesRetrieveRW() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ArticleRw();
+        $result = $model->select("article_rw.id as value, article_rw.title as text, ch.title as chapter, c.title as category" )
+            ->join("chapters_rw ch","ch.id = article_rw.chapter_id")
+            ->join("category_rw c","c.id = ch.category_id")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function articlesRetrieveFR() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ArticleFr();
+        $result = $model->select("article_fr.id as value, article_fr.title as text, ch.title as chapter, c.title as category" )
+            ->join("chapters_fr ch","ch.id = article_fr.chapter_id")
+            ->join("category_fr c","c.id = ch.category_id")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function articlesRetrieveEN() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new ArticleEn();
+        $result = $model->select("article_en.id as value, article_en.title as text, ch.title as chapter, c.title as category" )
+            ->join("chapters_en ch","ch.id = article_en.chapter_id")
+            ->join("category_en c","c.id = ch.category_id")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
     }
     public function articleRetrieveRW(int $art_id = null) : ResponseInterface
     {
@@ -239,7 +306,6 @@ class Home extends BaseController
             ->join('article_rw a', 'a.id=laws_rw.articleId')
             ->join('chapters_rw c', 'c.id  = a.chapter_id')
             ->join('category_rw ca', 'ca.id  = c.category_id')
-            ->where('ca.id', 2)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
@@ -267,7 +333,6 @@ class Home extends BaseController
             ->join('article_fr a', 'a.id=laws_fr.articleId')
             ->join('chapters_fr c', 'c.id  = a.chapter_id')
             ->join('category_fr ca', 'ca.id  = c.category_id')
-            ->where('ca.id', 2)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
@@ -295,7 +360,6 @@ class Home extends BaseController
             ->join('article_en a', 'a.id = laws_en.articleId')
             ->join('chapters_en c', 'c.id  = a.chapter_id')
             ->join('category_en ca', 'ca.id  = c.category_id')
-            ->where('ca.id', 2)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
@@ -304,8 +368,19 @@ class Home extends BaseController
     {
         $this->appendHeader();
         $model = new CategoryRw();
-        $result = $model->select("category_rw.id, category_rw.title,if(isnull(chapter_rw.num),0,chapter_rw.num) as chapters_count")
+        $result = $model->select("category_rw.id, category_rw.title, category_rw.law_no, category_rw.description,if(isnull(chapter_rw.num),0,chapter_rw.num) as chapters_count")
             ->join("(select count(cr.id) as num,category_id from chapters_rw cr left join category_rw ccr on ccr.id = cr.category_id group by category_id) chapter_rw","chapter_rw.category_id = category_rw.id","left")
+            ->whereIn("category_rw.id", [1,2])
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrieveCategoriesKglRW() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryRw();
+        $result = $model->select("category_rw.id, category_rw.title, category_rw.law_no, category_rw.description,if(isnull(chapter_rw.num),0,chapter_rw.num) as chapters_count")
+            ->join("(select count(cr.id) as num,category_id from chapters_rw cr left join category_rw ccr on ccr.id = cr.category_id group by category_id) chapter_rw","chapter_rw.category_id = category_rw.id","left")
+            ->where("category_rw.id", 3)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
@@ -313,8 +388,19 @@ class Home extends BaseController
     {
         $this->appendHeader();
         $model = new CategoryEn();
-        $result = $model->select("category_en.id, category_en.title,if(isnull(chapter_en.num),0,chapter_en.num) as chapters_count")
+        $result = $model->select("category_en.id, category_en.title, category_en.law_no, category_en.description,if(isnull(chapter_en.num),0,chapter_en.num) as chapters_count")
             ->join("(select count(cr.id) as num,category_id from chapters_en cr left join category_en ccr on ccr.id = cr.category_id group by category_id) chapter_en","chapter_en.category_id = category_en.id","left")
+            ->whereIn("category_en.id", [1,2])
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrieveCategoriesKglEN() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryEn();
+        $result = $model->select("category_en.id, category_en.title, category_en.law_no, category_en.description,if(isnull(chapter_en.num),0,chapter_en.num) as chapters_count")
+            ->join("(select count(cr.id) as num,category_id from chapters_en cr left join category_en ccr on ccr.id = cr.category_id group by category_id) chapter_en","chapter_en.category_id = category_en.id","left")
+            ->where("category_en.id", 3)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
@@ -323,13 +409,52 @@ class Home extends BaseController
         $this->appendHeader();
         $model = new CategoryFr();
 
-        $result = $model->select("category_fr.id, category_fr.title,if(isnull(chapter_fr.num),0,chapter_fr.num) as chapters_count")
+        $result = $model->select("category_fr.id, category_fr.title, category_fr.law_no, category_fr.description,if(isnull(chapter_fr.num),0,chapter_fr.num) as chapters_count")
             ->join("(select count(cr.id) as num,category_id from chapters_fr cr left join category_fr ccr on ccr.id = cr.category_id group by category_id) chapter_fr","chapter_fr.category_id = category_fr.id","left")
+            ->whereIn("category_fr.id", [1,2])
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function retrieveCategoriesKglFR() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryFr();
+
+        $result = $model->select("category_fr.id, category_fr.title, category_fr.law_no, category_fr.description,if(isnull(chapter_fr.num),0,chapter_fr.num) as chapters_count")
+            ->join("(select count(cr.id) as num,category_id from chapters_fr cr left join category_fr ccr on ccr.id = cr.category_id group by category_id) chapter_fr","chapter_fr.category_id = category_fr.id","left")
+            ->where("category_fr.id", 3)
             ->get()->getResultArray();
         return $this->response->setJSON($result);
     }
 
-    public function storeCategory() :ResponseInterface
+    public function categoryRetrieveFR() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryFr();
+
+        $result = $model->select("category_fr.id as value, category_fr.title as text")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function categoryRetrieveEN() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryEn();
+
+        $result = $model->select("category_en.id as value, category_en.title as text")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function categoryRetrieveRW() : ResponseInterface
+    {
+        $this->appendHeader();
+        $model = new CategoryRw();
+
+        $result = $model->select("category_rw.id as value, category_rw.title as text")
+            ->get()->getResultArray();
+        return $this->response->setJSON($result);
+    }
+    public function storeCategory() : ResponseInterface
     {
         $this->appendHeader();
         $model = new CategoryEn();
@@ -344,15 +469,15 @@ class Home extends BaseController
             return $this->response->setJSON($exception->getMessage());
         }
     }
-
-    public function storeChapterRW() :ResponseInterface
+    public function storeChapterRW() : ResponseInterface
     {
         $this->appendHeader();
         $model = new ChapterRwModel();
         $input = json_decode(file_get_contents('php://input'));
         $data = [
             'title' => $input->title,
-            'category_id' => 2
+            'category_id' => $input->category,
+            'description' => $input->description
         ];
         try {
             $model->insert($data);
@@ -368,7 +493,8 @@ class Home extends BaseController
         $input = json_decode(file_get_contents('php://input'));
         $data = [
             'title' => $input->title,
-            'category_id' => 2
+            'category_id' => $input->category,
+            'description' => $input->description
         ];
         try {
             $model->insert($data);
@@ -377,6 +503,7 @@ class Home extends BaseController
             return $this->response->setJSON($exception->getMessage());
         }
     }
+
     public function storeChapterEN() :ResponseInterface
     {
         $this->appendHeader();
@@ -384,7 +511,8 @@ class Home extends BaseController
         $input = json_decode(file_get_contents('php://input'));
         $data = [
             'title' => $input->title,
-            'category_id' => 2
+            'category_id' => $input->category,
+            'description' => $input->description
         ];
         try {
             $model->insert($data);
@@ -393,4 +521,5 @@ class Home extends BaseController
             return $this->response->setJSON($exception->getMessage());
         }
     }
+
 }

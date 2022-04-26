@@ -8,5 +8,5 @@ class ChapterFrModel extends Model
 {
     protected $table = "chapters_fr";
     protected $primaryKey = "id";
-    protected $allowedFields = ["category_id", "title"];
+    protected $allowedFields = ["category_id","title", "description"];
 }

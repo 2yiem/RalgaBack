@@ -8,5 +8,5 @@ class ChapterEnModel extends Model
 {
     protected $table = "chapters_en";
     protected $primaryKey = "id";
-    protected $allowedFields = ["category_id","title"];
+    protected $allowedFields = ["category_id","title", "description"];
 }
